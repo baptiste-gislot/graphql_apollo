@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { ApolloServer } from 'apollo-server-express';
+import jwt from 'jsonwebtoken';
+import { ApolloServer, AuthenticationError } from 'apollo-server-express';
 
 import schema from './schema';
 import resolvers from './resolvers';
@@ -10,6 +11,18 @@ import models, { sequelize } from './models';
 const app = express();
 
 app.use(cors());
+
+const getMe = async req => {
+  const token = req.headers['x-token'];
+
+  if (token) {
+    try {
+      return await jwt.verify(token, process.env.SECRET);
+    } catch (error) {
+      throw new AuthenticationError('Votre session a expiré, veuillez vous reconnecter.');
+    }
+  }
+};
 
 const server = new ApolloServer({
   typeDefs: schema,
@@ -24,11 +37,15 @@ const server = new ApolloServer({
       message,
     };
   },
-  context: async () => ({
-    models,
-    me: await models.User.findByLogin('baptiste'),
-    secret: process.env.SECRET,
-  }),
+  context: async ({ req }) => {
+    const me = await getMe(req);
+
+    return {
+      models,
+      me,
+      secret: process.env.SECRET,   
+    };
+  },
 });
 
 const eraseDatabaseOnSync = true;
@@ -51,6 +68,7 @@ const createUsersWithMessages = async () => {
       username: 'baptiste',
       email: 'baptiste.gislot@gmail.com',
       password: 'tototata',
+      role: 'ADMIN',
       messages: [
         {
           text: 'J\'essaie de finir ce tuto',
