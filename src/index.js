@@ -71,7 +71,7 @@ const createUsersWithMessages = async date => {
       role: 'ADMIN',
       messages: [
         {
-          text: 'J\'essaie de finir ce tuto',
+          text: 'I\'m gonna make it !',
           createdAt: date.setSeconds(date.getSeconds() + 1),
         },
       ],
