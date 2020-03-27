@@ -6,7 +6,7 @@ export default gql`
     message(id: ID!): Message!
   }
 
-  extended type Mutation {
+  extend type Mutation {
     createMessage(text: String!): Message!
     deleteMessage(id: ID!): Boolean!
   }
@@ -26,5 +26,13 @@ export default gql`
     text: String!
     createdAt: Date!
     user: User!
+  }
+
+  extend type Subscription {
+    messageCreated: MessageCreated!
+  }
+
+  type MessageCreated {
+    message: Message!
   }
 `;
